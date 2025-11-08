@@ -5,8 +5,8 @@ import { db } from "./server/db";
 
 const selectProcessWithSteps = async (id: string) => {
   const [workflow] = await db.select().from(processes).where(eq(processes.id, id)).limit(1);
-  const steps = await db.select().from(tasks).where(eq(tasks.processId, id));
-  return { ...workflow, steps }
+  const tasks_ = await db.select().from(tasks).where(eq(tasks.processId, id));
+  return { ...workflow, tasks: tasks_ }
 }
 
 export type Process = InferSelectModel<typeof processes>
