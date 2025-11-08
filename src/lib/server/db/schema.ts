@@ -1,7 +1,7 @@
 // schema.ts
 import { pgTable, uuid, text, timestamp, integer } from 'drizzle-orm/pg-core';
 
-export const workflows = pgTable('workflows', {
+export const processes = pgTable('processes', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
@@ -9,9 +9,9 @@ export const workflows = pgTable('workflows', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const workflowSteps = pgTable('workflow_steps', {
+export const tasks = pgTable('tasks', {
   id: uuid('id').defaultRandom().primaryKey(),
-  workflowId: uuid('workflow_id').references(() => workflows.id, { onDelete: 'cascade' }).notNull(),
+  processId: uuid('process_id').references(() => processes.id, { onDelete: 'cascade' }).notNull(),
   name: text('name').notNull(),
   description: text('description'),
   type: text('type', { enum: ['approval', 'document', 'task'] }).notNull(),
@@ -19,25 +19,25 @@ export const workflowSteps = pgTable('workflow_steps', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const workflowRuns = pgTable('workflow_runs', {
+export const processRuns = pgTable('process_runs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  workflowId: uuid('workflow_id').references(() => workflows.id).notNull(),
+  processId: uuid('process_id').references(() => processes.id).notNull(),
   status: text('status', { enum: ['in_progress', 'completed', 'cancelled'] }).notNull().default('in_progress'),
   startedAt: timestamp('started_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
 });
 
-export const stepDependencies = pgTable('step_dependencies', {
+export const taskDependencies = pgTable('task_dependencies', {
   id: uuid('id').defaultRandom().primaryKey(),
-  stepId: uuid('step_id').references(() => workflowSteps.id, { onDelete: 'cascade' }).notNull(),
-  dependsOnStepId: uuid('depends_on_step_id').references(() => workflowSteps.id, { onDelete: 'cascade' }).notNull(),
+  taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }).notNull(),
+  dependsOnTaskId: uuid('depends_on_task_id').references(() => tasks.id, { onDelete: 'cascade' }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const stepCompletions = pgTable('step_completions', {
+export const taskCompletions = pgTable('task_completions', {
   id: uuid('id').defaultRandom().primaryKey(),
-  runId: uuid('run_id').references(() => workflowRuns.id, { onDelete: 'cascade' }).notNull(),
-  stepId: uuid('step_id').references(() => workflowSteps.id).notNull(),
+  runId: uuid('run_id').references(() => processRuns.id, { onDelete: 'cascade' }).notNull(),
+  taskId: uuid('task_id').references(() => tasks.id).notNull(),
   completedBy: text('completed_by'), // For now just a string, add users table later
   status: text('status', { enum: ['pending', 'completed'] }).notNull().default('pending'),
   notes: text('notes'),

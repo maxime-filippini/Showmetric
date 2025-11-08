@@ -1,5 +1,5 @@
 import { db } from "$lib/server/db"
-import { workflows, workflowSteps, stepDependencies } from "$lib/server/db/schema"
+import { processes, tasks, taskDependencies } from "$lib/server/db/schema"
 import { command, form, query } from '$app/server';
 import { z } from "zod"
 import { error, fail, redirect } from "@sveltejs/kit";
@@ -10,8 +10,8 @@ import { eq } from "drizzle-orm";
 export const getWorkflowById = query(z.string(), async (id: string) => {
 
   try {
-    const [workflow] = await db.select().from(workflows).where(eq(workflows.id, id)).limit(1);
-    const steps = await db.select().from(workflowSteps).where(eq(workflowSteps.workflowId, id));
+    const [workflow] = await db.select().from(processes).where(eq(processes.id, id)).limit(1);
+    const steps = await db.select().from(tasks).where(eq(tasks.processId, id));
 
     if (workflow) {
       return { ...workflow, steps }
@@ -24,16 +24,16 @@ export const getWorkflowById = query(z.string(), async (id: string) => {
 })
 
 export const deleteWorkflow = command(z.string(), async (id: string) => {
-  const [workflow] = await db.select().from(workflows).where(eq(workflows.id, id)).limit(1)
+  const [workflow] = await db.select().from(processes).where(eq(processes.id, id)).limit(1)
 
   if (workflow) {
-    await db.delete(workflows).where(eq(workflows.id, id))
+    await db.delete(processes).where(eq(processes.id, id))
   }
 
 })
 
 export const getWorkflows = query(async () => {
-  return await db.select().from(workflows)
+  return await db.select().from(processes)
 })
 
 
@@ -43,7 +43,7 @@ const insertWorkflowSchema = z.object({
 })
 
 export const createNewWorkflow = form(insertWorkflowSchema, async ({ name, description }) => {
-  const [workflow] = await db.insert(workflows).values({ name, description }).returning({ id: workflows.id })
+  const [workflow] = await db.insert(processes).values({ name, description }).returning({ id: processes.id })
   redirect(303, `/workflows/${workflow.id}`);
 })
 
@@ -59,10 +59,10 @@ const insertStepSchema = z.object({
 export const createStep = form(insertStepSchema, async (data) => {
   const { dependsOn, ...stepData } = data;
   const toWrite = { ...stepData, order: parseInt(stepData.order) }
-  const [step] = await db.insert(workflowSteps).values(toWrite).returning({ id: workflowSteps.id })
+  const [step] = await db.insert(tasks).values(toWrite).returning({ id: tasks.id })
 
   if (dependsOn && dependsOn.length > 0) {
-    await db.insert(stepDependencies).values(
+    await db.insert(taskDependencies).values(
       dependsOn.map(dependsOnStepId => ({
         stepId: step.id,
         dependsOnStepId
@@ -75,6 +75,6 @@ export const createStep = form(insertStepSchema, async (data) => {
 
 
 export const getSteps = query(z.string(), async (id: string) => {
-  let steps = await db.select().from(workflowSteps).where(eq(workflowSteps.workflowId, id))
+  let steps = await db.select().from(tasks).where(eq(tasks.processId, id))
   return steps
 })

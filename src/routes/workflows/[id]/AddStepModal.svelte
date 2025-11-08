@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { createStep } from '$lib/data.remote';
-	import type { WorkflowWithSteps } from '$lib/types';
+	import type { ProcessWithSteps } from '$lib/types';
 
 	let dialog: HTMLDialogElement;
 
 	type Props = {
-		workflow: WorkflowWithSteps;
+		workflow: ProcessWithSteps;
 	};
 	let { workflow }: Props = $props();
 </script>
