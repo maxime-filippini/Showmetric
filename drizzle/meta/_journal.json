@@ -15,6 +15,13 @@
       "when": 1762204714935,
       "tag": "0001_daily_iron_lad",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762587492669,
+      "tag": "0002_wet_lorna_dane",
+      "breakpoints": true
     }
   ]
 }
